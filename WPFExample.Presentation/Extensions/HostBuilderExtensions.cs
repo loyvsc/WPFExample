@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using WPFExample.ApplicationCore.Primitives.Interfaces;
+using WPFExample.DAL.Services;
 using WPFExample.Presentation.ViewModels;
 using WPFExample.Presentation.Views;
 
@@ -20,6 +22,14 @@ public static class HostBuilderExtensions
         return host.ConfigureServices(collection =>
         {
             collection.AddSingleton<MainWindow>();
+        });
+    }
+    
+    public static IHostBuilder AddServices(this IHostBuilder host)
+    {
+        return host.ConfigureServices(collection =>
+        {
+            collection.AddSingleton<IUserService, UserService>();
         });
     }
 }
