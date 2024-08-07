@@ -13,7 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="HostBuilderExtensions\" />
+      <ProjectReference Include="..\WPFExample.DAL\WPFExample.DAL.csproj" />
     </ItemGroup>
 
 </Project>
