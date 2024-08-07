@@ -22,7 +22,10 @@ public static class HostBuilderExtensions
     {
         return host.ConfigureServices(collection =>
         {
-            collection.AddSingleton<MainWindow>();
+            collection.AddSingleton<MainWindow>(x=>new MainWindow()
+            {
+                DataContext = x.GetRequiredService<MainWindowViewModel>()
+            });
         });
     }
     
