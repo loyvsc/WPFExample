@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using WPFExample.ApplicationCore.Primitives.Interfaces;
+using WPFExample.DAL.HttpHandlers;
 using WPFExample.DAL.Services;
 using WPFExample.Presentation.ViewModels;
 using WPFExample.Presentation.Views;
@@ -30,6 +31,16 @@ public static class HostBuilderExtensions
         return host.ConfigureServices(collection =>
         {
             collection.AddSingleton<IUserService, UserService>();
+        });
+    }
+    
+    public static IHostBuilder AddHttpUtilities(this IHostBuilder host)
+    {
+        return host.ConfigureServices(collection =>
+        {
+            collection.AddHttpClient<IUserService, UserService>()
+                .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://petstore.swagger.io/v2/"))
+                .AddHttpMessageHandler<AuthHeaderHandler>();
         });
     }
 }
