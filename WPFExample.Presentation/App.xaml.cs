@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using WPFExample.ApplicationCore.Primitives.Models;
 using WPFExample.Presentation.Extensions;
 using WPFExample.Presentation.Views;
 
@@ -19,8 +20,15 @@ public partial class App : Application
     private IHostBuilder CreateHostBuilder()
     {
         return new HostBuilder()
-            .AddHttpUtilities()
+            .ConfigureServices(x =>
+            {
+                x.AddSingleton<User>();
+                x.AddSingleton<IEventAggregator, EventAggregator>();
+            })
+            .AddConfiguration()
+            .AddSerilog()
             .AddServices()
+            .AddHttpUtilities()
             .AddViewModels()
             .AddViews();
     }

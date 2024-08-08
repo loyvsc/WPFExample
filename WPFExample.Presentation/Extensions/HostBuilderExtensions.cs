@@ -1,5 +1,7 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 using WPFExample.ApplicationCore.Primitives.Interfaces;
 using WPFExample.DAL.HttpHandlers;
 using WPFExample.DAL.Services;
@@ -15,6 +17,10 @@ public static class HostBuilderExtensions
         return host.ConfigureServices(collection =>
         {
             collection.AddSingleton<MainWindowViewModel>();
+            collection.AddSingleton<AuthViewModel>();
+            collection.AddSingleton<RegisterViewModel>();
+            collection.AddSingleton<AboutDeveloperViewModel>();
+            collection.AddSingleton<UserInformationViewModel>();
         });
     }
     
@@ -25,6 +31,10 @@ public static class HostBuilderExtensions
             collection.AddSingleton<MainWindow>(x=>new MainWindow()
             {
                 DataContext = x.GetRequiredService<MainWindowViewModel>()
+            });
+            collection.AddScoped<RegisterView>(x => new RegisterView()
+            {
+                DataContext = x.GetRequiredService<RegisterViewModel>()
             });
         });
     }
@@ -44,6 +54,27 @@ public static class HostBuilderExtensions
             collection.AddHttpClient<IUserService, UserService>()
                 .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://petstore.swagger.io/v2/"))
                 .AddHttpMessageHandler<AuthHeaderHandler>();
+
+            collection.AddSingleton<AuthHeaderHandler>();
         });
+    }
+
+    public static IHostBuilder AddSerilog(this IHostBuilder host)
+    {
+        return host.UseSerilog((hostingContext, loggerConfiguration) =>
+        {
+            loggerConfiguration
+                .ReadFrom.Configuration(hostingContext.Configuration);
+        });
+    }
+
+    public static IHostBuilder AddConfiguration(this IHostBuilder host)
+    {
+        return 
+            host.ConfigureAppConfiguration(config =>
+            {
+                config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                config.AddEnvironmentVariables();
+            });
     }
 }
