@@ -1,9 +1,12 @@
+using System.Globalization;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using OneOf;
 using WPFExample.ApplicationCore.Primitives.Interfaces;
 using WPFExample.ApplicationCore.Primitives.Models;
+using WPFExample.ApplicationCore.Primitives.Responses;
 
 namespace WPFExample.DAL.Services;
 
@@ -19,7 +22,7 @@ public class UserService : IUserService
         _user = user;
     }
 
-    public async Task<string> RegisterAsync(User user, CancellationToken cancellationToken = default)
+    public async Task<UserServiceResponse> RegisterAsync(User user, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -27,23 +30,23 @@ public class UserService : IUserService
 
             var response = await _httpClient.PostAsync("user", content, cancellationToken);
 
-            return response.IsSuccessStatusCode ? "Registration complete" : "Some ultra rare error has occured";
+            return response.IsSuccessStatusCode ? new UserServiceResponse(true,"Registration complete") : new UserServiceResponse(false,"Some ultra rare error has occured");
         }
         catch (OperationCanceledException)
         {
-            return "Operation canceled";
+            return new UserServiceResponse(false,"Operation canceled");
         }
         catch (HttpRequestException)
         {
-            return "Network is unstable, try again later";
+            return new UserServiceResponse(false,"Network is unstable, try again later");
         }
         catch (Exception)
         {
-            return "Some ultra rare error has occured";
+            return new UserServiceResponse(false,"Some ultra rare error has occured");
         }
     }
 
-    public async Task<string> Login(string login, string password, CancellationToken cancellationToken = default)
+    public async Task<UserServiceResponse> Login(string login, string password, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -52,59 +55,76 @@ public class UserService : IUserService
             queryParameters.Add("username", login);
             queryParameters.Add("password", password);
 
-            var response = await _httpClient.PostAsync($"user?{queryParameters}", null, cancellationToken);
+            string uri = $"user/login?{queryParameters}";
+            var response = await _httpClient.GetAsync(uri, cancellationToken);
 
             var responseString = await response.Content.ReadAsStringAsync(cancellationToken);
 
             if (response.IsSuccessStatusCode)
             {
-                int index = responseString.IndexOf(':');
+                int index = responseString.LastIndexOf(':');
                 if (index != -1)
                 {
                     string token = responseString.Substring(index + 1);
+                    token = token.Remove(token.Length - 2, 2);
                     if (response.Headers.TryGetValues("x-expires-after", out var headerValues))
                     {
                         var expiresAfter = headerValues.FirstOrDefault();
                         if (expiresAfter != null)
                         {
-                            _user.TokenExpiresIn = Convert.ToDateTime(expiresAfter);
+                            _user.TokenExpiresIn = DateTime.ParseExact(expiresAfter, "ddd MMM dd HH:mm:ss 'UTC' yyyy", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
                             _user.Token = token;
-                            return "Ok";
+                            _user.Username = login;
+                            _user.Password = password;
+                            return new UserServiceResponse(true,"Ok");
                         }
                     }
                 }
             }
-            return "Some ultra rare error has occured";
+            return new UserServiceResponse(true,"Some ultra rare error has occured");
         }
         catch (OperationCanceledException)
         {
-            return "Operation canceled";
+            return new UserServiceResponse(false, "Operation canceled");
         }
         catch (HttpRequestException)
         {
-            return "Network is unstable, try again later";
+            return new UserServiceResponse(false, "Network is unstable, try again later");
         }
         catch (Exception)
         {
-            return "Some ultra rare error has occured";
+            return new UserServiceResponse(false, "Some ultra rare error has occured");
         }
     }
 
-    public async Task<string> Logout()
+    public async Task<UserServiceResponse> Logout()
     {
         try
         {
-            var response = await _httpClient.PostAsync("user/logout", null);
+            var response = await _httpClient.GetAsync("user/logout");
+            if (response.IsSuccessStatusCode)
+            {
+                _user.TokenExpiresIn = DateTime.MinValue;
+                _user.Token = string.Empty;
+                _user.Firstname = string.Empty;
+                _user.Lastname = string.Empty;
+                _user.Email = string.Empty;
+                _user.Username = string.Empty;
+                _user.Password = string.Empty;
+                _user.Phone = string.Empty;
+                _user.UserStatus = 0;
+                return new UserServiceResponse(true, "Ok");
+            }
 
-            return response.IsSuccessStatusCode ? "Ok" : "Some ultra rare error has occured";
+            return new UserServiceResponse(true, "Some ultra rare error has occured");
         }
         catch (HttpRequestException)
         {
-            return "Network is unstable, try again later";
+            return new UserServiceResponse(false,"Network is unstable, try again later");
         }
         catch (Exception)
         {
-            return "Some ultra rare error has occured";
+            return new UserServiceResponse(false,"Some ultra rare error has occured");
         }
     }
 
@@ -112,7 +132,7 @@ public class UserService : IUserService
     {
         try
         {
-            var response = await _httpClient.PostAsync("user/" + username, null, cancellationToken);
+            var response = await _httpClient.GetAsync($"user/{username}", cancellationToken);
             
             var responseString = await response.Content.ReadAsStringAsync(cancellationToken);
 
