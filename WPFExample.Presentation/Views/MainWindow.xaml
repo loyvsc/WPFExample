@@ -3,10 +3,41 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:local="clr-namespace:WPFExample.Presentation.Views"
+        xmlns:viewmodels="clr-namespace:WPFExample.Presentation.ViewModels"
+        xmlns:controls="clr-namespace:WPFExample.Presentation.Controls"
+        d:DataContext="{d:DesignInstance viewmodels:MainWindowViewModel}"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Main window" Height="500" Width="700">
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60px"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
         
-    </Grid>
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Center">
+            <Button Width="120"
+                    Height="40"
+                    Margin="5,0"
+                    Command="{Binding PreviousPage}"
+                    Content="Previous page"/>
+            <Button Width="120"
+                    Height="40"
+                    Margin="5,0"
+                    Command="{Binding NextPage}"
+                    Content="Next page"/>
+        </StackPanel>
+        
+        <controls:NavigationControl Grid.Row="1"
+                     Grid.Column="0"
+                     ViewModel="{Binding CurrentPageViewModel, UpdateSourceTrigger=PropertyChanged}"/>
+        
+        <controls:NavigationControl Grid.Row="1"
+                                    Grid.Column="1"
+                                    ViewModel="{Binding AuthViewModel, UpdateSourceTrigger=PropertyChanged}"/>
+        </Grid>
 </Window>

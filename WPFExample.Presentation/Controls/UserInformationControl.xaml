@@ -1,0 +1,47 @@
+<UserControl x:Class="WPFExample.Presentation.Controls.UserInformationControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewmodel="clr-namespace:WPFExample.Presentation.ViewModels"
+             xmlns:controls="clr-namespace:WPFExample.Presentation.Controls"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance viewmodel:UserInformationViewModel}"
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <Style TargetType="controls:UserInformationControl">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding  LoggedIn, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                    <Setter Property="Content">
+                        <Setter.Value>
+                            <StackPanel x:Name="PART_ContentRoot"
+                                        Margin="10"
+                                        Orientation="Vertical">
+                                <StackPanel.Resources>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Margin" Value="10" />
+                                    </Style>
+                                </StackPanel.Resources>
+                                <TextBlock Text="{Binding User.Id, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="{Binding User.Firstname, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="{Binding User.Lastname, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="{Binding User.Email, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="{Binding User.Phone, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding LoggedIn, UpdateSourceTrigger=PropertyChanged}" Value="False">
+                    <Setter Property="Content">
+                        <Setter.Value>
+                            <TextBlock HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Text="Please, log in or register">
+                            </TextBlock>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+</UserControl>
